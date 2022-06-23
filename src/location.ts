@@ -19,6 +19,20 @@ interface LocationBase {
   hash: string;
 }
 
+export interface RawLocationExternal {
+  /** Query parameters. */
+  query?: {[k: string]: string} | null;
+  /** Route parameters */
+  params?: {[k: string]: string} | null;
+  /** Replace in the history. */
+  replace?: boolean;
+  /** Name name of the route. */
+  name?: string;
+  /** Path route URL. */
+  path?: string;
+  /** Hash name of the route. */
+  hash?: string;
+}
 export interface RawLocation extends LocationBase {
   /** Query parameters. */
   query?: {[k: string]: string} | null;

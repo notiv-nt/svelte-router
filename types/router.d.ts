@@ -1,5 +1,5 @@
 import { HISTORY_MODE, HASH_TYPE } from './history';
-import { RawLocation } from './location';
+import { RawLocation, RawLocationExternal } from './location';
 import { Route, RouteConfig, RouteConfigPrefab } from './route';
 /**
  * History lib configuration.
@@ -54,6 +54,7 @@ export declare class Router {
     private _currentRoute;
     private _pendingRoute;
     private _asyncViews;
+    private _lastCommandIsBack;
     /**
      * @constructor
      * @param {RouterConfig} opts
@@ -66,23 +67,23 @@ export declare class Router {
     /**
      * Get router mode
      */
-    readonly mode: HISTORY_MODE;
+    get mode(): HISTORY_MODE;
     /**
      * Get router basename
      */
-    readonly basename: string;
+    get basename(): string;
     /**
      * Get routes
      */
-    readonly routes: RouteConfig[];
+    get routes(): RouteConfig[];
     /**
      * Get current resolved route
      */
-    readonly currentRoute: Route | null;
+    get currentRoute(): Route | null;
     /**
      * Get router link active class
      */
-    readonly activeClass: string;
+    get activeClass(): string;
     /**
      * Register a navigation guard which will be called
      * whenever a navigation is triggered.
@@ -100,6 +101,12 @@ export declare class Router {
      * @return {function} Unregister listener function.
      */
     onBeforeNavigation(callback: onNavigationCallback): () => void;
+    /**
+     * adsasd
+     * @param {function} callback callback function.
+     * @return {function} Unregister listener function.
+     */
+    onBeforeNavigationBack(callback: onNavigationCallback): () => void;
     /**
      * Register a callback which will be called when
      * all navigation guards are resolved, and the final
@@ -122,7 +129,7 @@ export declare class Router {
      * @param {function?} onAbort On abort callback function.
      * @throws When the rawLocation is invalid or when the path is invalid.
      */
-    push(rawLocation: RawLocation | string, onComplete?: () => void, onAbort?: () => void): void;
+    push(rawLocation: RawLocationExternal | string, onComplete?: () => void, onAbort?: () => void): void;
     /**
      * Replace in navigation
      * @param {RawLocation|string} rawLocation raw path or location object.
@@ -222,6 +229,12 @@ export declare class Router {
      * @param {Route} to Resolved route.
      */
     private notifyOnBeforeNavigation;
+    /**
+     * Notify all onBeforeNavigationBack listeners
+     * @param {Route} from Current route.
+     * @param {Route} to Resolved route.
+     */
+    private notifyOnBeforeNavigationBack;
     /**
      * Notify all onNavigationChanged listeners
      * @param {Route} from Current route.

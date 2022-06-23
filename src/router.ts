@@ -8,6 +8,7 @@ import createHistory, {
 import {
   Location,
   RawLocation,
+  RawLocationExternal,
   createLocation,
 } from './location';
 import {
@@ -34,13 +35,13 @@ import {
 type historyModule = {
   action: HISTORY_ACTION;
   location: HistoryLocation;
-  push: (path: string) => void;
+  push: (path: string, state?: object) => void;
   replace: (path: string) => void;
   go: (n: number) => void;
   goBack: () => void;
   goForward: () => void;
-  listen: (listener:
-    (location: HistoryLocation, action: HISTORY_ACTION) => void
+  listen: (
+    listener: (location: HistoryLocation, action: HISTORY_ACTION) => void
   ) => () => void;
 };
 
@@ -81,8 +82,11 @@ export interface RouterConfig {
  * and resolve the new navigation.
  */
 type navigationGuardNextAction = undefined | boolean | Error | string | object;
-type navigationGuardFunction = (from: Route | null, to: Route | null,
-  next: (action: navigationGuardNextAction) => void) => void;
+type navigationGuardFunction = (
+  from: Route | null,
+  to: Route | null,
+  next: (action: navigationGuardNextAction) => void
+) => void;
 
 /**
  * Navigation Guard entry.
@@ -101,6 +105,7 @@ type onNavigationCallback = (from: Route, to: Route) => void;
 interface EventListeners {
   onError: Map<symbol, onErrorCallback>;
   onBeforeNavigation: Map<symbol, onNavigationCallback>;
+  onBeforeNavigationBack: Map<symbol, onNavigationCallback>;
   onNavigationChanged: Map<symbol, onNavigationCallback>;
 }
 
@@ -119,6 +124,7 @@ export class Router {
   private _currentRoute: Route | null = null;
   private _pendingRoute: Route | null = null;
   private _asyncViews: Map<symbol, () => object>;
+  private _lastCommandIsBack = false;
 
   /**
    * @constructor
@@ -136,8 +142,10 @@ export class Router {
     if (tc.not.isString(opts.historyOpts.basename)) {
       throw new Error(`invalid basename, "${opts.historyOpts.basename}"`);
     }
-    if (opts.historyOpts.basename.length > 0
-      && hasPrefix(opts.historyOpts.basename, '/') == false) {
+    if (
+      opts.historyOpts.basename.length > 0 &&
+      hasPrefix(opts.historyOpts.basename, '/') == false
+    ) {
       opts.historyOpts.basename = '/' + opts.historyOpts.basename;
     }
 
@@ -154,10 +162,12 @@ export class Router {
     this._routes = [];
     this._activeClass = opts.activeClass || 'active';
     this._history = createHistory(
-        this._mode, opts.historyOpts || {}
+        this._mode,
+        opts.historyOpts || {},
     ) as historyModule;
+    this._lastCommandIsBack = false;
     this._historyListener = this._history.listen(
-        this.onHistoryChange.bind(this)
+        this.onHistoryChange.bind(this),
     );
 
     // Navigation guards and listeners
@@ -165,6 +175,7 @@ export class Router {
     this._listeners = {
       onError: new Map(),
       onBeforeNavigation: new Map(),
+      onBeforeNavigationBack: new Map(),
       onNavigationChanged: new Map(),
     };
 
@@ -174,6 +185,32 @@ export class Router {
 
     // Async views
     this._asyncViews = new Map();
+
+    window.history.scrollRestoration = 'manual';
+
+    const cb1 = (): void => {
+      const newState = Object.assign({}, window.history.state, {
+        scrollPosition: {
+          x: window.pageXOffset,
+          y: window.pageYOffset,
+        },
+      });
+
+      window.history.replaceState(newState, '', location.href);
+    };
+
+    this.onBeforeNavigation(cb1);
+    this.onBeforeNavigationBack(cb1);
+    this.onNavigationChanged(() => {
+      setTimeout(() => {
+        window.scrollTo({
+          top: window.history.state?.scrollPosition?.y || 0,
+          // tslint:disable-next-line
+          behavior: 'auto',
+        });
+      }, 0);
+    });
+
 
     // Preprocess routes
     this.preprocessRoutes(this._routes, opts.routes);
@@ -256,6 +293,19 @@ export class Router {
   }
 
   /**
+   * adsasd
+   * @param {function} callback callback function.
+   * @return {function} Unregister listener function.
+   */
+  onBeforeNavigationBack(callback: onNavigationCallback): () => void {
+    const key = Symbol();
+    this._listeners.onBeforeNavigationBack.set(key, callback);
+    return (): void => {
+      this._listeners.onBeforeNavigationBack.delete(key);
+    };
+  }
+
+  /**
    * Register a callback which will be called when
    * all navigation guards are resolved, and the final
    * navigation change is resolved.
@@ -292,23 +342,24 @@ export class Router {
    * @throws When the rawLocation is invalid or when the path is invalid.
    */
   push(
-      rawLocation: RawLocation | string,
+      rawLocation: RawLocationExternal | string,
       onComplete?: () => void,
-      onAbort?: () => void): void {
+      onAbort?: () => void,
+  ): void {
     let location;
+
     try {
-      location = this.rawLocationToLocation(rawLocation, false);
+      location = this.rawLocationToLocation(rawLocation as RawLocation, false);
     } catch (e) {
       if (onAbort && tc.isFunction(onAbort)) {
         onAbort();
       }
-      this.notifyOnError(
-          new Error(`invalid location, ${e.toString()}`)
-      );
+      this.notifyOnError(new Error(`invalid location, ${e.toString()}`));
       return;
     }
 
-    this.resolveRoute(location,
+    this.resolveRoute(
+        location,
       tc.isFunction(onComplete) ? onComplete : undefined,
       tc.isFunction(onAbort) ? onAbort : undefined,
     );
@@ -324,7 +375,8 @@ export class Router {
   replace(
       rawLocation: RawLocation | string,
       onComplete?: () => void,
-      onAbort?: () => void): void {
+      onAbort?: () => void,
+  ): void {
     let location;
     try {
       location = this.rawLocationToLocation(rawLocation, true);
@@ -332,13 +384,12 @@ export class Router {
       if (onAbort && tc.isFunction(onAbort)) {
         onAbort();
       }
-      this.notifyOnError(
-          new Error(`invalid location, ${e.toString()}`)
-      );
+      this.notifyOnError(new Error(`invalid location, ${e.toString()}`));
       return;
     }
 
-    this.resolveRoute(location,
+    this.resolveRoute(
+        location,
       tc.isFunction(onComplete) ? onComplete : undefined,
       tc.isFunction(onAbort) ? onAbort : undefined,
     );
@@ -357,7 +408,10 @@ export class Router {
    * Go one step back in the navigation history.
    */
   back(): void {
+    this._lastCommandIsBack = true;
+    this.notifyOnBeforeNavigationBack();
     this._history.goBack();
+    // TODO Здесь скролл вернуть в иходную позитцию?*
   }
 
   /**
@@ -377,20 +431,28 @@ export class Router {
     if (tc.isNullOrUndefined(rawLocation)) {
       throw new Error('invalid rawLocation');
     }
-    if (tc.isNullOrUndefined(rawLocation.name)
-    || tc.not.isString(rawLocation.name)) {
+    if (
+      tc.isNullOrUndefined(rawLocation.name) ||
+      tc.not.isString(rawLocation.name)
+    ) {
       throw new Error('missing or invalid route name');
     }
-    if (tc.not.isNullOrUndefined(rawLocation.params)
-    && tc.not.isObject(rawLocation.params)) {
+    if (
+      tc.not.isNullOrUndefined(rawLocation.params) &&
+      tc.not.isObject(rawLocation.params)
+    ) {
       throw new Error('invalid params property, expected object.');
     }
-    if (tc.not.isNullOrUndefined(rawLocation.query)
-    && tc.not.isObject(rawLocation.query)) {
+    if (
+      tc.not.isNullOrUndefined(rawLocation.query) &&
+      tc.not.isObject(rawLocation.query)
+    ) {
       throw new Error('invalid query property, expected object.');
     }
-    if (tc.not.isNullOrUndefined(rawLocation.hash)
-    && tc.not.isString(rawLocation.hash)) {
+    if (
+      tc.not.isNullOrUndefined(rawLocation.hash) &&
+      tc.not.isString(rawLocation.hash)
+    ) {
       throw new Error('invalid hash property');
     }
     rawLocation.params = rawLocation.params || {};
@@ -399,8 +461,9 @@ export class Router {
 
     // Try to find the route
     const match = this.findRouteByName(
-        rawLocation.name as string,
-        this._routes);
+      rawLocation.name as string,
+      this._routes,
+    );
     if (match == null) {
       throw new Error(`no matching route found for name:${rawLocation.name}`);
     }
@@ -434,7 +497,8 @@ export class Router {
   private preprocessRoutes(
       routes: RouteConfig[],
       prefabs: RouteConfigPrefab[],
-      parent: RouteConfig | null = null): void {
+      parent: RouteConfig | null = null,
+  ): void {
     for (let i = 0; i < prefabs.length; i++) {
       let route: RouteConfig;
       try {
@@ -463,13 +527,15 @@ export class Router {
       if (route.path == '*') {
         route.matcher = /.*/i;
         route.generator = (): string => '/';
-      // Regex based
+        // Regex based
       } else {
         route.matcher = pathToRegexp(
             route.path,
-            route.paramKeys as pathToRegexp.Key[], {
-              end: (prefabs[i].children as RouteConfigPrefab[]).length == 0,
-            });
+          route.paramKeys as pathToRegexp.Key[],
+          {
+            end: (prefabs[i].children as RouteConfigPrefab[]).length == 0,
+          },
+        );
         route.generator = pathToRegexp.compile(route.path);
       }
 
@@ -477,8 +543,8 @@ export class Router {
       if ((prefabs[i].children as RouteConfigPrefab[]).length > 0) {
         this.preprocessRoutes(
             route.children,
-            prefabs[i].children as RouteConfigPrefab[],
-            route
+          prefabs[i].children as RouteConfigPrefab[],
+          route,
         );
       }
     }
@@ -491,7 +557,8 @@ export class Router {
    */
   private onHistoryChange(
       location: HistoryLocation,
-      action: HISTORY_ACTION): void {
+      action: HISTORY_ACTION,
+  ): void {
     // Resolve route when the history is popped.
     if (action == HISTORY_ACTION.POP) {
       this.push(historyFullURL(location));
@@ -507,7 +574,8 @@ export class Router {
    */
   private rawLocationToLocation(
       rawLocation: RawLocation | string,
-      replace: boolean): Location {
+      replace: boolean,
+  ): Location {
     if (tc.isNullOrUndefined(rawLocation)) {
       throw new Error('invalid rawLocation');
     }
@@ -536,7 +604,8 @@ export class Router {
   private resolveRoute(
       location: Location,
       onComplete?: () => void,
-      onAbort?: () => void): void {
+      onAbort?: () => void,
+  ): void {
     let matches: Record[] = [];
 
     if (this._basename.length > 0) {
@@ -551,7 +620,7 @@ export class Router {
           onAbort();
         }
         this.notifyOnError(
-            new Error(`no matching route found for name:${location.name}`)
+            new Error(`no matching route found for name:${location.name}`),
         );
         return;
       }
@@ -565,7 +634,7 @@ export class Router {
           onAbort();
         }
         this.notifyOnError(
-            new Error(`invalid route parameters, :${e.toString()}`)
+            new Error(`invalid route parameters, :${e.toString()}`),
         );
         return;
       }
@@ -580,15 +649,15 @@ export class Router {
         matches = matches.reverse();
       }
 
-    // Resolved route by path
-    // and generate the route records
+      // Resolved route by path
+      // and generate the route records
     } else {
       if (this.matchRoute(location.path, this._routes, matches) == false) {
         if (onAbort != null) {
           onAbort();
         }
         this.notifyOnError(
-            new Error(`no matching route found for path:${location.path}`)
+            new Error(`no matching route found for path:${location.path}`),
         );
         return;
       }
@@ -604,8 +673,10 @@ export class Router {
     }
 
     // Skip the same location
-    if (this._currentRoute
-    && this._pendingRoute.fullPath == this._currentRoute.fullPath) {
+    if (
+      this._currentRoute &&
+      this._pendingRoute.fullPath == this._currentRoute.fullPath
+    ) {
       this._pendingRoute = null;
       if (onComplete != null) {
         onComplete();
@@ -619,7 +690,7 @@ export class Router {
     // Notify all before navigation listeners
     this.notifyOnBeforeNavigation(
         Object.freeze(cloneRoute(this._currentRoute as Route)),
-        Object.freeze(cloneRoute(this._pendingRoute as Route))
+        Object.freeze(cloneRoute(this._pendingRoute as Route)),
     );
 
     // Resolve navigation guards
@@ -636,7 +707,8 @@ export class Router {
   private matchRoute(
       path: string,
       routes: RouteConfig[],
-      matches: Record[]): boolean {
+      matches: Record[],
+  ): boolean {
     for (let i = 0; i < routes.length; i++) {
       const match = routes[i].matcher.exec(path);
       if (match) {
@@ -664,7 +736,8 @@ export class Router {
    */
   private findRouteByName(
       name: string,
-      routes: RouteConfig[]): RouteConfig | null {
+      routes: RouteConfig[],
+  ): RouteConfig | null {
     for (let i = 0; i < routes.length; i++) {
       if (routes[i].name == name) {
         return routes[i];
@@ -686,11 +759,13 @@ export class Router {
   private resolveRedirect(
       redirect: routeRedirect,
       onComplete: undefined | (() => void),
-      onAbort: undefined | (() => void)): void {
+      onAbort: undefined | (() => void),
+  ): void {
     // Function
     if (tc.isFunction(redirect)) {
-      redirect =
-        (redirect as (to: Route) => string)(this._pendingRoute as Route);
+      redirect = (redirect as (to: Route) => string)(
+        this._pendingRoute as Route,
+      );
     }
 
     // External
@@ -701,10 +776,11 @@ export class Router {
 
     // URL or Route object
     this._pendingRoute = null;
-    this.push(tc.isString(redirect)
-      ? redirect as string
-      : redirect as RawLocation,
-    onComplete, onAbort);
+    this.push(
+      tc.isString(redirect) ? (redirect as string) : (redirect as RawLocation),
+      onComplete,
+      onAbort,
+    );
   }
 
   /**
@@ -718,7 +794,8 @@ export class Router {
   private resolveNavigationGuard(
       index = 0,
       onComplete: undefined | (() => void),
-      onAbort: undefined | (() => void)): void {
+      onAbort: undefined | (() => void),
+  ): void {
     // There are no other guards
     // finish the navigation change
     if (index >= this._navigationGuards.length) {
@@ -734,12 +811,14 @@ export class Router {
       }
       if (err != null) {
         this.notifyOnError(
-            new Error(`navigation guard error, ${err.toString()}`)
+            new Error(`navigation guard error, ${err.toString()}`),
         );
       }
       // Revert history if needed
-      if (this._currentRoute != null &&
-      (historyFullURL(this._history.location) != this._currentRoute.fullPath)) {
+      if (
+        this._currentRoute != null &&
+        historyFullURL(this._history.location) != this._currentRoute.fullPath
+      ) {
         this._history.push(this._currentRoute.fullPath);
       }
     };
@@ -766,7 +845,8 @@ export class Router {
           } else {
             abort(new Error(`unexpected next(val) value.`));
           }
-        });
+        },
+    );
   }
 
   /**
@@ -785,8 +865,24 @@ export class Router {
    * @param {Route} to Resolved route.
    */
   private notifyOnBeforeNavigation(from: Route, to: Route): void {
+    if (this._lastCommandIsBack) {
+      this._lastCommandIsBack = false;
+      return;
+    }
+
     for (const callback of this._listeners.onBeforeNavigation.values()) {
       callback(from, to);
+    }
+  }
+
+  /**
+   * Notify all onBeforeNavigationBack listeners
+   * @param {Route} from Current route.
+   * @param {Route} to Resolved route.
+   */
+  private notifyOnBeforeNavigationBack(): void {
+    for (const callback of this._listeners.onBeforeNavigationBack.values()) {
+      callback(this._currentRoute as Route, {} as Route);
     }
   }
 
@@ -809,7 +905,8 @@ export class Router {
    */
   private finishNavigationChange(
       onComplete?: () => void,
-      onAbort?: () => void): void {
+      onAbort?: () => void,
+  ): void {
     if (this._pendingRoute == null) {
       throw new Error('navigation cannot be finished, missing pending route');
     }
@@ -819,11 +916,13 @@ export class Router {
         continue;
       }
       if (this._asyncViews.has(r.id) == false) {
-        asyncPending.push(new Promise((resolve, reject): void => {
-          (r.component as Promise<componentModule>)
-              .then((m) => resolve({id: r.id, component: m.default}))
-              .catch((e) => reject(e));
-        }));
+        asyncPending.push(
+            new Promise((resolve, reject): void => {
+              (r.component as Promise<componentModule>)
+                  .then((m) => resolve({id: r.id, component: m.default}))
+                  .catch((e) => reject(e));
+            }),
+        );
       }
     }
 
@@ -843,19 +942,21 @@ export class Router {
       // notify all listeners and update the history
       this.notifyOnNavigationChanged(
           Object.freeze(cloneRoute(this._currentRoute as Route)),
-          Object.freeze(cloneRoute(this._pendingRoute as Route))
+          Object.freeze(cloneRoute(this._pendingRoute as Route)),
       );
 
       this._currentRoute = cloneRoute(this._pendingRoute as Route);
       this._pendingRoute = null;
 
       // Resolve history update if needed
-      if (historyFullURL(this._history.location)
-      != this._currentRoute.fullPath) {
+      if (
+        historyFullURL(this._history.location) != this._currentRoute.fullPath
+      ) {
         // Push
         if (this._currentRoute.action == HISTORY_ACTION.PUSH) {
           this._history.push(this._currentRoute.fullPath);
-        // Replace
+          // this._historyScroll.
+          // Replace
         } else if (this._currentRoute.action == HISTORY_ACTION.REPLACE) {
           this._history.replace(this._currentRoute.fullPath);
         }
@@ -868,21 +969,23 @@ export class Router {
 
     // Resolve lazy loaded async components
     if (asyncPending.length > 0) {
-      Promise.all(asyncPending).then((views) => {
-        for (const v of views) {
-          const view = v as {id: symbol; component: () => object};
-          this._asyncViews.set(view.id, view.component);
-        }
-        afterResolved();
-      }).catch((e) => {
-        this.notifyOnError(
-            new Error(`failed to load async error, ${e.toString()}`)
-        );
-        if (onAbort != null) {
-          onAbort();
-        }
-      });
-    // No pending async components
+      Promise.all(asyncPending)
+          .then((views) => {
+            for (const v of views) {
+              const view = v as { id: symbol; component: () => object };
+              this._asyncViews.set(view.id, view.component);
+            }
+            afterResolved();
+          })
+          .catch((e) => {
+            this.notifyOnError(
+                new Error(`failed to load async error, ${e.toString()}`),
+            );
+            if (onAbort != null) {
+              onAbort();
+            }
+          });
+      // No pending async components
     } else {
       afterResolved();
     }

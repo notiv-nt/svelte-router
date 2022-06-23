@@ -4,28 +4,31 @@
    * @module svelte-router/component/link
    */
 
-  import tc from '@spaceavocado/type-check';
-  import {router, urlMatch, urlPrefix, trimPrefix} from '@spaceavocado/svelte-router';
-  import {onMount, onDestroy, createEventDispatcher} from 'svelte';
+  import tc from "@spaceavocado/type-check";
+  import {
+    router,
+    urlMatch,
+    urlPrefix,
+    trimPrefix,
+  } from "@etip/svelte-router-from-crutch-builder";
+  import { onMount, onDestroy, createEventDispatcher } from "svelte";
 
   // Props
   export let to;
   export let replace = false;
   export let exact = false;
-  export let cls = '';
+  export let cls = "";
   export let activeClass = null;
   export let disabled = false;
 
   // Internals
   const dispatch = createEventDispatcher();
-  let cssClass = '';
+  let cssClass = "";
   let matchUrl;
   let navigationChangedListener = null;
   const setCssClass = (active) => {
     cssClass = cls;
-    cssClass += active
-      ? ` ${activeClass || $router.activeClass}`
-      : '';
+    cssClass += active ? ` ${activeClass || $router.activeClass}` : "";
   };
 
   // Resolve route object to URL
@@ -35,7 +38,7 @@
         to = $router.routeURL(to);
       } catch (e) {
         console.error(`svelte-router/link, ${e.message}`);
-        to = '';
+        to = "";
       }
     }
     matchUrl = trimPrefix(to, $router.basename);
@@ -46,28 +49,32 @@
    */
   onMount(() => {
     if (tc.not.isNullOrUndefined($router.currentRoute)) {
-      setCssClass(exact
-        ? urlMatch($router.currentRoute.fullPath, matchUrl)
-        : urlPrefix($router.currentRoute.fullPath, matchUrl)
+      setCssClass(
+        exact
+          ? urlMatch($router.currentRoute.fullPath, matchUrl)
+          : urlPrefix($router.currentRoute.fullPath, matchUrl)
       );
     }
-    navigationChangedListener = $router.onNavigationChanged((fromRoute, toRoute) => {
-      setCssClass(exact
-        ? urlMatch(toRoute.fullPath, matchUrl)
-        : urlPrefix(toRoute.fullPath, matchUrl)
-      );
-    });
+    navigationChangedListener = $router.onNavigationChanged(
+      (fromRoute, toRoute) => {
+        setCssClass(
+          exact
+            ? urlMatch(toRoute.fullPath, matchUrl)
+            : urlPrefix(toRoute.fullPath, matchUrl)
+        );
+      }
+    );
   });
 
   /**
    * Clean up the listeners
    */
   onDestroy(() => {
-		if (navigationChangedListener != null) {
+    if (navigationChangedListener != null) {
       navigationChangedListener();
       navigationChangedListener = null;
     }
-	});
+  });
 
   // Toggle the collapsed state
   function navigate() {
@@ -75,22 +82,21 @@
       return;
     }
     if (replace === true) {
-      $router.replace(to,
-        () => dispatch('completed'),
-        () => dispatch('aborted'));
+      $router.replace(
+        to,
+        () => dispatch("completed"),
+        () => dispatch("aborted")
+      );
     } else {
-      $router.push(to,
-        () => dispatch('completed'),
-        () => dispatch('aborted'));
+      $router.push(
+        to,
+        () => dispatch("completed"),
+        () => dispatch("aborted")
+      );
     }
   }
 </script>
 
-<a
-  href="{to}"
-  class="{cssClass}"
-  class:disabled
-  on:click|preventDefault="{navigate}"
->
-  <slot></slot>
+<a href={to} class={cssClass} class:disabled on:click|preventDefault={navigate}>
+  <slot />
 </a>
