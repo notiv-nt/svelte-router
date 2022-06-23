@@ -80,11 +80,11 @@ To see the details code documentation, please read the [Code Documentation](http
 ## Installation via NPM or Yarn
 
 ```sh
-npm install -D @etip/svelte-router-from-crutch-builder
+npm install -D @kakiho/svelte-router
 ```
 
 ```sh
-yarn add @etip/svelte-router-from-crutch-builder -D
+yarn add @kakiho/svelte-router -D
 ```
 
 ## Webpack Setup
@@ -180,8 +180,8 @@ app.svelve:
 
 ```html
 <script>
-  import createRouter from "@etip/svelte-router-from-crutch-builder";
-  import RouterView from "@etip/svelte-router-from-crutch-builder/component/view";
+  import createRouter from "@kakiho/svelte-router";
+  import RouterView from "@kakiho/svelte-router/component/view";
 
   // View components
   import ViewHome from "./views/home.svelte";
@@ -434,7 +434,7 @@ component.svelte:
 
 ```html
 <script>
-import RouterLink from '@etip/svelte-router-from-crutch-builder/component/link';
+import RouterLink from '@kakiho/svelte-router/component/link';
 
 <!-- URL -->
 <RouterLink to='/services/design'>Navigate by URL</RouterLink>
@@ -458,7 +458,7 @@ The route link is the base component for routing action. The route link renders 
 
 ```html
 <script>
-  import RouterLink from "@etip/svelte-router-from-crutch-builder/component/link";
+  import RouterLink from "@kakiho/svelte-router/component/link";
 
   // Navigation has been completed
   function handleOnCompleted() {}
@@ -479,7 +479,7 @@ The route link is the base component for routing action. The route link renders 
 
 ```html
 <script>
-  import RouterView from "@etip/svelte-router-from-crutch-builder/component/view";
+  import RouterView from "@kakiho/svelte-router/component/view";
 </script>
 
 <RouterView />
@@ -495,7 +495,7 @@ The route link is the base component for routing action. The route link renders 
 Besides the [Router Link Component](#router-link-component), the route could be changed like so:
 
 ```javascript
-import { router } from "@etip/svelte-router-from-crutch-builder";
+import { router } from "@kakiho/svelte-router";
 
 // URL
 $router.push("/services/design");
@@ -527,7 +527,7 @@ The navigation guards are primarily used to guard navigations either by redirect
 #### Create a Navigation Guard
 
 ```javascript
-import { router } from "@etip/svelte-router-from-crutch-builder";
+import { router } from "@kakiho/svelte-router";
 
 // The guard callback is called when a navigation occurs,
 // the next function must be called to continue the navigation.
@@ -603,8 +603,8 @@ app.svelve
 
 ```html
 <script>
-  import createRouter from '@etip/svelte-router-from-crutch-builder';
-  import RouterView from '@etip/svelte-router-from-crutch-builder/component/view';
+  import createRouter from '@kakiho/svelte-router';
+  import RouterView from '@kakiho/svelte-router/component/view';
 
   // View components
   import ViewHome from './views/home.svelte';
@@ -657,7 +657,7 @@ To see the details code documentation, please read the [Code Documentation](http
 ### Create Router
 
 ```javascript
-import createRouter from "@etip/svelte-router-from-crutch-builder";
+import createRouter from "@kakiho/svelte-router";
 
 // Please see the opts below.
 const routerOpts = {};
@@ -683,13 +683,13 @@ const router = createRouter(routerOpts);
 > Note: History modes could be accessed like so:
 
 ```javascript
-import { ROUTER_MODE } from "@etip/svelte-router-from-crutch-builder";
+import { ROUTER_MODE } from "@kakiho/svelte-router";
 ```
 
 > Note: Hash types could be accessed like so:
 
 ```javascript
-import { HASH_TYPE } from "@etip/svelte-router-from-crutch-builder";
+import { HASH_TYPE } from "@kakiho/svelte-router";
 ```
 
 More information:
@@ -699,7 +699,7 @@ More information:
 #### Access Router Instance
 
 ```javascript
-import { router } from "@etip/svelte-router-from-crutch-builder";
+import { router } from "@kakiho/svelte-router";
 ```
 
 > Note: It must be accessed as **$router** since it is the Svelte read-able store object, to resolved auto subscribe/unsubscribe.

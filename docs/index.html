@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>@etip/svelte-router-from-crutch-builder</title>
+    <title>@kakiho/svelte-router</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="assets/css/main.css" />
@@ -32,7 +32,7 @@
                 <li class="state failure">The search index is not available</li>
               </ul>
               <a href="index.html" class="title"
-                >@etip/svelte-router-from-crutch-builder</a
+                >@kakiho/svelte-router</a
               >
             </div>
             <div class="table-cell" id="tsd-widgets">
@@ -80,7 +80,7 @@
               <a href="globals.html">Globals</a>
             </li>
           </ul>
-          <h1>@etip/svelte-router-from-crutch-builder</h1>
+          <h1>@kakiho/svelte-router</h1>
         </div>
       </div>
     </header>
@@ -322,8 +322,8 @@
             >
               <h2>Installation via NPM or Yarn</h2>
             </a>
-            <pre><code class="language-sh">npm install -D @etip/svelte-router-from-crutch-builder</code></pre>
-            <pre><code class="language-sh">yarn add @etip/svelte-router-from-crutch-builder -D</code></pre>
+            <pre><code class="language-sh">npm install -D @kakiho/svelte-router</code></pre>
+            <pre><code class="language-sh">yarn add @kakiho/svelte-router -D</code></pre>
             <a
               href="#webpack-setup"
               id="webpack-setup"
@@ -444,8 +444,8 @@
 });</code></pre>
             <p>app.svelve:</p>
             <pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-<span class="hljs-keyword">import</span> createRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;
-<span class="hljs-keyword">import</span> RouterView <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder/component/view'</span>;
+<span class="hljs-keyword">import</span> createRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;
+<span class="hljs-keyword">import</span> RouterView <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router/component/view'</span>;
 
 <span class="hljs-comment">// View components</span>
 <span class="hljs-keyword">import</span> ViewHome <span class="hljs-keyword">from</span> <span class="hljs-string">'./views/home.svelte'</span>;
@@ -840,7 +840,7 @@ createRouter({
               <h3>Router Link Component</h3>
             </a>
             <pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-<span class="hljs-keyword">import</span> RouterLink <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder/component/link'</span>;
+<span class="hljs-keyword">import</span> RouterLink <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router/component/link'</span>;
 
 <span class="xml"><span class="hljs-comment">&lt;!-- URL --&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">RouterLink</span> <span class="hljs-attr">to</span>=<span class="hljs-string">'/services/design'</span>&gt;</span>Navigate by URL<span class="hljs-tag">&lt;/<span class="hljs-name">RouterLink</span>&gt;</span>
@@ -922,7 +922,7 @@ createRouter({
               <h4>Router Link Events</h4>
             </a>
             <pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-<span class="hljs-keyword">import</span> RouterLink <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder/component/link'</span>;
+<span class="hljs-keyword">import</span> RouterLink <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router/component/link'</span>;
 
 <span class="hljs-comment">// Navigation has been completed</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleOnCompleted</span>(<span class="hljs-params"></span>) </span>{}
@@ -940,7 +940,7 @@ createRouter({
               <h3>Router View Component</h3>
             </a>
             <pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-<span class="hljs-keyword">import</span> RouterView <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder/component/view'</span>;
+<span class="hljs-keyword">import</span> RouterView <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router/component/view'</span>;
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">RouterView</span> /&gt;</span></code></pre>
@@ -977,7 +977,7 @@ createRouter({
               <a href="#router-link-component">Router Link Component</a>, the
               route could be changed like so:
             </p>
-            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {router} <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;
+            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {router} <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;
 
 <span class="hljs-comment">// URL</span>
 $router.push(<span class="hljs-string">'/services/design'</span>);
@@ -1024,7 +1024,7 @@ $router.push({
             >
               <h4>Create a Navigation Guard</h4>
             </a>
-            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {router} <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;
+            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {router} <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;
 
 <span class="hljs-comment">// The guard callback is called when a navigation occurs,</span>
 <span class="hljs-comment">// the next function must be called to continue the navigation.</span>
@@ -1125,8 +1125,8 @@ next({
             </p>
             <p>app.svelve</p>
             <pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-<span class="hljs-keyword">import</span> createRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;
-<span class="hljs-keyword">import</span> RouterView <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder/component/view'</span>;
+<span class="hljs-keyword">import</span> createRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;
+<span class="hljs-keyword">import</span> RouterView <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router/component/view'</span>;
 
 <span class="hljs-comment">// View components</span>
 <span class="hljs-keyword">import</span> ViewHome <span class="hljs-keyword">from</span> <span class="hljs-string">'./views/home.svelte'</span>;
@@ -1189,7 +1189,7 @@ createRouter({
             >
               <h3>Create Router</h3>
             </a>
-            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> createRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;
+            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> createRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;
 
 <span class="hljs-comment">// Please see the opts below.</span>
 <span class="hljs-keyword">const</span> routerOpts = {};
@@ -1258,11 +1258,11 @@ createRouter({
             <blockquote>
               <p>Note: History modes could be accessed like so:</p>
             </blockquote>
-            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {ROUTER_MODE} <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;</code></pre>
+            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {ROUTER_MODE} <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;</code></pre>
             <blockquote>
               <p>Note: Hash types could be accessed like so:</p>
             </blockquote>
-            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {HASH_TYPE} <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;</code></pre>
+            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {HASH_TYPE} <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;</code></pre>
             <p>More information:</p>
             <ul>
               <li><a href="#route-configuration">Route Configuration</a></li>
@@ -1274,7 +1274,7 @@ createRouter({
             >
               <h4>Access Router Instance</h4>
             </a>
-            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {router} <span class="hljs-keyword">from</span> <span class="hljs-string">'@etip/svelte-router-from-crutch-builder'</span>;</code></pre>
+            <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {router} <span class="hljs-keyword">from</span> <span class="hljs-string">'@kakiho/svelte-router'</span>;</code></pre>
             <blockquote>
               <p>
                 Note: It must be accessed as <strong>$router</strong> since it

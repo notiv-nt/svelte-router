@@ -4,7 +4,7 @@
    * @module svelte-router/component/view
    */
   import tc from "@spaceavocado/type-check";
-  import { router } from "@etip/svelte-router-from-crutch-builder";
+  import { router } from "@kakiho/svelte-router";
   import { onMount, onDestroy, setContext, getContext } from "svelte";
 
   // View depth context key

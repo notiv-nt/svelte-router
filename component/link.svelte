@@ -10,7 +10,7 @@
     urlMatch,
     urlPrefix,
     trimPrefix,
-  } from "@etip/svelte-router-from-crutch-builder";
+  } from "@kakiho/svelte-router";
   import { onMount, onDestroy, createEventDispatcher } from "svelte";
 
   // Props
