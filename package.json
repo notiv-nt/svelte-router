@@ -1,5 +1,5 @@
 {
-  "name": "@spaceavocado/svelte-router",
+  "name": "@kakiho/svelte-router",
   "version": "1.0.16",
   "description": "Simple Svelte Router for Single Page Applications (SPA).",
   "main": "lib/svelte-router.js",
