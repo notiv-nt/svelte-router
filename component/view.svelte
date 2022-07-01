@@ -86,5 +86,10 @@
 {#if self}
   <svelte:self />
 {:else if view}
-  <svelte:component this={view} route={$router.currentRoute} {...viewProps} />
+  <svelte:component
+    this={view}
+    route={$router.currentRoute}
+    {...viewProps}
+    {...$$restProps}
+  />
 {/if}
