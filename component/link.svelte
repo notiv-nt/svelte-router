@@ -26,6 +26,9 @@
   let cssClass = "";
   let matchUrl;
   let navigationChangedListener = null;
+  let propsList = $$restProps;
+  let classList = $$restProps.class || "";
+  delete propsList.class;
   const setCssClass = (active) => {
     cssClass = cls;
     cssClass += active ? ` ${activeClass || $router.activeClass}` : "";
@@ -97,6 +100,12 @@
   }
 </script>
 
-<a href={to} class={cssClass} class:disabled on:click|preventDefault={navigate}>
+<a
+  href={to}
+  class="{cssClass} {classList}"
+  class:disabled
+  on:click|preventDefault={navigate}
+  {...propsList}
+>
   <slot />
 </a>
