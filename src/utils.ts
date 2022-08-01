@@ -196,7 +196,11 @@ export function fullURL(
         if (queryPath.length > 0) {
           queryPath += '&';
         }
-        queryPath += `${key}=${query[key]}`;
+        if (typeof query[key] !== 'undefined') {
+          queryPath += `${key}=${query[key]}`;
+        } else {
+          queryPath += key;
+        }
       }
     }
     if (queryPath.length > 0) {
