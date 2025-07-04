@@ -11,7 +11,7 @@ import { Key } from 'path-to-regexp';
  * * object: route name {name: 'ROUTE'}.
  * * function: callback function fn(to) to resolve the redirect.
  */
-export declare type routeRedirect = null | string | object | ((to: Route) => string);
+export type routeRedirect = null | string | object | ((to: Route) => string);
 /**
  * Props passed to component.
  * * false: default. do not resolve props.
@@ -20,10 +20,10 @@ export declare type routeRedirect = null | string | object | ((to: Route) => str
  * * function: callback function to resolve props from route object.
  * fn(router) => props.
  */
-declare type routeProps = boolean | object | ((route: Route) => {
+type routeProps = boolean | object | ((route: Route) => {
     [k: string]: string;
 });
-export declare type componentModule = {
+export type componentModule = {
     default: object;
 };
 /**

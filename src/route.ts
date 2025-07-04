@@ -4,15 +4,10 @@
  */
 
 import tc from '@spaceavocado/type-check';
-import {
-  fullURL,
-  deepClone,
-  isWholeNumber,
-  isFloatNumber,
-} from './utils';
-import {HISTORY_ACTION} from './history';
-import {Location} from './location';
-import {Key} from 'path-to-regexp';
+import { fullURL, deepClone, isWholeNumber, isFloatNumber } from './utils';
+import { HISTORY_ACTION } from './history';
+import { Location } from './location';
+import { Key } from 'path-to-regexp';
 
 /**
  * Route redirect.
@@ -30,8 +25,8 @@ export type routeRedirect = null | string | object | ((to: Route) => string);
  * * function: callback function to resolve props from route object.
  * fn(router) => props.
  */
-type routeProps = boolean | object | ((route: Route) => {[k: string]: string});
-export type componentModule = {default: object};
+type routeProps = boolean | object | ((route: Route) => { [k: string]: string });
+export type componentModule = { default: object };
 
 /**
  * Route config prefab used to generate Route RouteConfig.
@@ -48,7 +43,7 @@ export interface RouteConfigPrefab {
    */
   component?: boolean | (() => object) | Promise<componentModule>;
   /** Route meta object. */
-  meta?: {[k: string]: string};
+  meta?: { [k: string]: string };
   props?: routeProps;
   /** Children routes. */
   children?: RouteConfigPrefab[];
@@ -72,11 +67,11 @@ export interface RouteConfig extends RouteConfigPrefab {
    * URL generator function.
    * @param params router param dictionary.
    */
-  generator: (params: {[k: string]: string}) => string;
+  generator: (params: { [k: string]: string }) => string;
   /** Children routes. */
   children: RouteConfig[];
   /** Route meta object. */
-  meta: {[k: string]: string};
+  meta: { [k: string]: string };
 }
 
 /**
@@ -93,9 +88,10 @@ export function createRouteConfig(prefab: RouteConfigPrefab): RouteConfig {
   if (tc.isNullOrUndefined(prefab.path) || tc.not.isString(prefab.path)) {
     throw new Error('invalid route config path property');
   }
-  if (tc.not.isNullOrUndefined(prefab.component)
-    && tc.not.isFunction(prefab.component)
-    && tc.not.isPromise(prefab.component)
+  if (
+    tc.not.isNullOrUndefined(prefab.component) &&
+    tc.not.isFunction(prefab.component) &&
+    tc.not.isPromise(prefab.component)
   ) {
     throw new Error('invalid route config component property');
   }
@@ -105,17 +101,17 @@ export function createRouteConfig(prefab: RouteConfigPrefab): RouteConfig {
 
   if (tc.isNullOrUndefined(prefab.redirect)) {
     prefab.redirect = null;
-  } else if (tc.not.isString(prefab.redirect)
-    && tc.not.isObject(prefab.redirect)
-    && tc.not.isFunction(prefab.redirect)) {
+  } else if (
+    tc.not.isString(prefab.redirect) &&
+    tc.not.isObject(prefab.redirect) &&
+    tc.not.isFunction(prefab.redirect)
+  ) {
     throw new Error('invalid route config redirect property');
   }
 
   if (tc.isNullOrUndefined(prefab.props)) {
     prefab.props = false;
-  } else if (prefab.props !== true
-    && tc.not.isObject(prefab.props)
-    && tc.not.isFunction(prefab.props)) {
+  } else if (prefab.props !== true && tc.not.isObject(prefab.props) && tc.not.isFunction(prefab.props)) {
     throw new Error('invalid route config props property');
   }
 
@@ -124,8 +120,7 @@ export function createRouteConfig(prefab: RouteConfigPrefab): RouteConfig {
     path: prefab.path,
     redirect: prefab.redirect,
     component: prefab.component || false,
-    async: tc.not.isNullOrUndefined(prefab.component)
-      && tc.isPromise(prefab.component),
+    async: tc.not.isNullOrUndefined(prefab.component) && tc.isPromise(prefab.component),
     name: prefab.name,
     meta: prefab.meta || {},
     props: prefab.props,
@@ -153,9 +148,9 @@ export interface Record {
   /** Lazy loaded component flag. */
   async: boolean;
   /** Route meta object. */
-  meta?: {[k: string]: string};
+  meta?: { [k: string]: string };
   /** Route params */
-  params: {[k: string]: string};
+  params: { [k: string]: string };
   props?: routeProps;
 }
 
@@ -165,9 +160,7 @@ export interface Record {
  * @param {string[]|object} params Regex exec output or params object.
  * @return {Record}
  */
-export function createRouteRecord(
-    route: RouteConfig,
-    params: string[] | {[k: string]: string | number}): Record {
+export function createRouteRecord(route: RouteConfig, params: string[] | { [k: string]: string | number }): Record {
   const record: Record = {
     id: route.id,
     path: route.path,
@@ -198,23 +191,18 @@ export function createRouteRecord(
   };
 
   // Regex array setter
-  let setParamValue = (
-      key: string,
-      collection: {[k: string]: string | number},
-      index: number): void => {
+  let setParamValue = (key: string, collection: { [k: string]: string | number }, index: number): void => {
     index++;
-    if (index < params.length) {
+    if (+index < +params.length) {
       collection[key] = resolveNumber((params as string[])[index]);
     }
   };
 
   // Object setter
   if (tc.isObject(params)) {
-    setParamValue = (
-        key: string,
-        collection: {[k: string]: string | number}): void => {
-      if (tc.not.isNullOrUndefined((params as {[k: string]: string})[key])) {
-        collection[key] = resolveNumber((params as {[k: string]: string})[key]);
+    setParamValue = (key: string, collection: { [k: string]: string | number }): void => {
+      if (tc.not.isNullOrUndefined((params as { [k: string]: string })[key])) {
+        collection[key] = resolveNumber((params as { [k: string]: string })[key]);
       }
     };
   }
@@ -241,11 +229,11 @@ export interface Route {
   /** Router full URL. */
   fullPath: string;
   /** Query parameters. */
-  query: {[k: string]: string};
+  query: { [k: string]: string };
   /** Captured router parameters. */
-  params: {[k: string]: string};
+  params: { [k: string]: string };
   /** Route meta props. */
-  meta?: {[k: string]: string};
+  meta?: { [k: string]: string };
   /** History action. */
   action: HISTORY_ACTION;
   /** Collection of matched router records (top-bottom). */
@@ -260,7 +248,7 @@ export interface Route {
  */
 export function createRoute(location: Location, matches: Record[]): Route {
   // Get the last route in the stack as the resolved route
-  const route = matches[matches.length-1];
+  const route = matches[matches.length - 1];
   return {
     name: route.name,
     action: location.action,
@@ -273,7 +261,7 @@ export function createRoute(location: Location, matches: Record[]): Route {
     meta: route.meta,
     matched: matches,
   };
-};
+}
 
 /**
  * Deep clone route.

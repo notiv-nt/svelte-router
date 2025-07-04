@@ -35,10 +35,10 @@ export interface RouterConfig {
  * * fn(url) or fn(RawLocation) = Break the navigation
  * and resolve the new navigation.
  */
-declare type navigationGuardNextAction = undefined | boolean | Error | string | object;
-declare type navigationGuardFunction = (from: Route | null, to: Route | null, next: (action: navigationGuardNextAction) => void) => void;
-declare type onErrorCallback = (e: Error) => void;
-declare type onNavigationCallback = (from: Route, to: Route) => void;
+type navigationGuardNextAction = undefined | boolean | Error | string | object;
+type navigationGuardFunction = (from: Route | null, to: Route | null, next: (action: navigationGuardNextAction) => void) => void;
+type onErrorCallback = (e: Error) => void;
+type onNavigationCallback = (from: Route, to: Route) => void;
 /**
  * Svelte Router core class.
  */

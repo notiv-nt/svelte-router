@@ -1,24 +1,8 @@
 import tc from '@spaceavocado/type-check';
 import pathToRegexp from 'path-to-regexp';
-import createHistory, {
-  HISTORY_MODE,
-  HISTORY_ACTION,
-  HASH_TYPE,
-} from './history';
-import {
-  Location,
-  RawLocation,
-  RawLocationExternal,
-  createLocation,
-} from './location';
-import {
-  HistoryLocation,
-  joinPath,
-  fullURL,
-  historyFullURL,
-  hasPrefix,
-  trimPrefix,
-} from './utils';
+import createHistory, { HISTORY_MODE, HISTORY_ACTION, HASH_TYPE } from './history';
+import { Location, RawLocation, RawLocationExternal, createLocation } from './location';
+import { HistoryLocation, joinPath, fullURL, historyFullURL, hasPrefix, trimPrefix } from './utils';
 import {
   Route,
   Record,
@@ -40,9 +24,7 @@ type historyModule = {
   go: (n: number) => void;
   goBack: () => void;
   goForward: () => void;
-  listen: (
-    listener: (location: HistoryLocation, action: HISTORY_ACTION) => void
-  ) => () => void;
+  listen: (listener: (location: HistoryLocation, action: HISTORY_ACTION) => void) => () => void;
 };
 
 /**
@@ -131,6 +113,7 @@ export class Router {
    * @param {RouterConfig} opts
    */
   constructor(opts: RouterConfig) {
+    // @ts-ignore
     opts = opts || {};
     opts.historyOpts = {};
     opts.mode = opts.mode || HISTORY_MODE.HISTORY;
@@ -142,10 +125,7 @@ export class Router {
     if (tc.not.isString(opts.historyOpts.basename)) {
       throw new Error(`invalid basename, "${opts.historyOpts.basename}"`);
     }
-    if (
-      opts.historyOpts.basename.length > 0 &&
-      hasPrefix(opts.historyOpts.basename, '/') == false
-    ) {
+    if (opts.historyOpts.basename.length > 0 && hasPrefix(opts.historyOpts.basename, '/') == false) {
       opts.historyOpts.basename = '/' + opts.historyOpts.basename;
     }
 
@@ -161,14 +141,9 @@ export class Router {
     this._basename = opts.historyOpts.basename;
     this._routes = [];
     this._activeClass = opts.activeClass || 'active';
-    this._history = createHistory(
-        this._mode,
-        opts.historyOpts || {},
-    ) as historyModule;
+    this._history = createHistory(this._mode, opts.historyOpts || {}) as historyModule;
     this._lastCommandIsBack = false;
-    this._historyListener = this._history.listen(
-        this.onHistoryChange.bind(this),
-    );
+    this._historyListener = this._history.listen(this.onHistoryChange.bind(this));
 
     // Navigation guards and listeners
     this._navigationGuards = [];
@@ -210,7 +185,6 @@ export class Router {
         });
       }, 0);
     });
-
 
     // Preprocess routes
     this.preprocessRoutes(this._routes, opts.routes);
@@ -341,11 +315,7 @@ export class Router {
    * @param {function?} onAbort On abort callback function.
    * @throws When the rawLocation is invalid or when the path is invalid.
    */
-  push(
-      rawLocation: RawLocationExternal | string,
-      onComplete?: () => void,
-      onAbort?: () => void,
-  ): void {
+  push(rawLocation: RawLocationExternal | string, onComplete?: () => void, onAbort?: () => void): void {
     let location;
 
     try {
@@ -359,9 +329,9 @@ export class Router {
     }
 
     this.resolveRoute(
-        location,
+      location,
       tc.isFunction(onComplete) ? onComplete : undefined,
-      tc.isFunction(onAbort) ? onAbort : undefined,
+      tc.isFunction(onAbort) ? onAbort : undefined
     );
   }
 
@@ -372,11 +342,7 @@ export class Router {
    * @param {function?} onAbort On abort callback function.
    * @throws when the rawLocation is invalid or when the path is invalid.
    */
-  replace(
-      rawLocation: RawLocation | string,
-      onComplete?: () => void,
-      onAbort?: () => void,
-  ): void {
+  replace(rawLocation: RawLocation | string, onComplete?: () => void, onAbort?: () => void): void {
     let location;
     try {
       location = this.rawLocationToLocation(rawLocation, true);
@@ -389,9 +355,9 @@ export class Router {
     }
 
     this.resolveRoute(
-        location,
+      location,
       tc.isFunction(onComplete) ? onComplete : undefined,
-      tc.isFunction(onAbort) ? onAbort : undefined,
+      tc.isFunction(onAbort) ? onAbort : undefined
     );
   }
 
@@ -431,28 +397,16 @@ export class Router {
     if (tc.isNullOrUndefined(rawLocation)) {
       throw new Error('invalid rawLocation');
     }
-    if (
-      tc.isNullOrUndefined(rawLocation.name) ||
-      tc.not.isString(rawLocation.name)
-    ) {
+    if (tc.isNullOrUndefined(rawLocation.name) || tc.not.isString(rawLocation.name)) {
       throw new Error('missing or invalid route name');
     }
-    if (
-      tc.not.isNullOrUndefined(rawLocation.params) &&
-      tc.not.isObject(rawLocation.params)
-    ) {
+    if (tc.not.isNullOrUndefined(rawLocation.params) && tc.not.isObject(rawLocation.params)) {
       throw new Error('invalid params property, expected object.');
     }
-    if (
-      tc.not.isNullOrUndefined(rawLocation.query) &&
-      tc.not.isObject(rawLocation.query)
-    ) {
+    if (tc.not.isNullOrUndefined(rawLocation.query) && tc.not.isObject(rawLocation.query)) {
       throw new Error('invalid query property, expected object.');
     }
-    if (
-      tc.not.isNullOrUndefined(rawLocation.hash) &&
-      tc.not.isString(rawLocation.hash)
-    ) {
+    if (tc.not.isNullOrUndefined(rawLocation.hash) && tc.not.isString(rawLocation.hash)) {
       throw new Error('invalid hash property');
     }
     rawLocation.params = rawLocation.params || {};
@@ -460,10 +414,7 @@ export class Router {
     rawLocation.hash = rawLocation.hash || '';
 
     // Try to find the route
-    const match = this.findRouteByName(
-      rawLocation.name as string,
-      this._routes,
-    );
+    const match = this.findRouteByName(rawLocation.name as string, this._routes);
     if (match == null) {
       throw new Error(`no matching route found for name:${rawLocation.name}`);
     }
@@ -495,9 +446,9 @@ export class Router {
    * @param {RouteConfig|null} parent Parent route.
    */
   private preprocessRoutes(
-      routes: RouteConfig[],
-      prefabs: RouteConfigPrefab[],
-      parent: RouteConfig | null = null,
+    routes: RouteConfig[],
+    prefabs: RouteConfigPrefab[],
+    parent: RouteConfig | null = null
   ): void {
     for (let i = 0; i < prefabs.length; i++) {
       let route: RouteConfig;
@@ -529,23 +480,15 @@ export class Router {
         route.generator = (): string => '/';
         // Regex based
       } else {
-        route.matcher = pathToRegexp(
-            route.path,
-          route.paramKeys as pathToRegexp.Key[],
-          {
-            end: (prefabs[i].children as RouteConfigPrefab[]).length == 0,
-          },
-        );
+        route.matcher = pathToRegexp(route.path, route.paramKeys as pathToRegexp.Key[], {
+          end: (prefabs[i].children as RouteConfigPrefab[]).length == 0,
+        });
         route.generator = pathToRegexp.compile(route.path);
       }
 
       // Process children
       if ((prefabs[i].children as RouteConfigPrefab[]).length > 0) {
-        this.preprocessRoutes(
-            route.children,
-          prefabs[i].children as RouteConfigPrefab[],
-          route,
-        );
+        this.preprocessRoutes(route.children, prefabs[i].children as RouteConfigPrefab[], route);
       }
     }
   }
@@ -555,10 +498,7 @@ export class Router {
    * @param {HistoryLocation} location
    * @param {HISTORY_ACTION} action
    */
-  private onHistoryChange(
-      location: HistoryLocation,
-      action: HISTORY_ACTION,
-  ): void {
+  private onHistoryChange(location: HistoryLocation, action: HISTORY_ACTION): void {
     // Resolve route when the history is popped.
     if (action == HISTORY_ACTION.POP) {
       this.push(historyFullURL(location));
@@ -572,10 +512,7 @@ export class Router {
    * @throws when the rawLocation is invalid or when the path is invalid.
    * @return {Location}
    */
-  private rawLocationToLocation(
-      rawLocation: RawLocation | string,
-      replace: boolean,
-  ): Location {
+  private rawLocationToLocation(rawLocation: RawLocation | string, replace: boolean): Location {
     if (tc.isNullOrUndefined(rawLocation)) {
       throw new Error('invalid rawLocation');
     }
@@ -601,11 +538,7 @@ export class Router {
    * @param {function?} onComplete On complete request callback.
    * @param {function?} onAbort On abort request callback.
    */
-  private resolveRoute(
-      location: Location,
-      onComplete?: () => void,
-      onAbort?: () => void,
-  ): void {
+  private resolveRoute(location: Location, onComplete?: () => void, onAbort?: () => void): void {
     let matches: Record[] = [];
 
     if (this._basename.length > 0) {
@@ -619,9 +552,7 @@ export class Router {
         if (onAbort != null) {
           onAbort();
         }
-        this.notifyOnError(
-            new Error(`no matching route found for name:${location.name}`),
-        );
+        this.notifyOnError(new Error(`no matching route found for name:${location.name}`));
         return;
       }
 
@@ -633,9 +564,7 @@ export class Router {
         if (onAbort != null) {
           onAbort();
         }
-        this.notifyOnError(
-            new Error(`invalid route parameters, :${e.toString()}`),
-        );
+        this.notifyOnError(new Error(`invalid route parameters, :${e.toString()}`));
         return;
       }
 
@@ -656,9 +585,7 @@ export class Router {
         if (onAbort != null) {
           onAbort();
         }
-        this.notifyOnError(
-            new Error(`no matching route found for path:${location.path}`),
-        );
+        this.notifyOnError(new Error(`no matching route found for path:${location.path}`));
         return;
       }
     }
@@ -673,10 +600,7 @@ export class Router {
     }
 
     // Skip the same location
-    if (
-      this._currentRoute &&
-      this._pendingRoute.fullPath == this._currentRoute.fullPath
-    ) {
+    if (this._currentRoute && this._pendingRoute.fullPath == this._currentRoute.fullPath) {
       this._pendingRoute = null;
       if (onComplete != null) {
         onComplete();
@@ -689,8 +613,8 @@ export class Router {
 
     // Notify all before navigation listeners
     this.notifyOnBeforeNavigation(
-        Object.freeze(cloneRoute(this._currentRoute as Route)),
-        Object.freeze(cloneRoute(this._pendingRoute as Route)),
+      Object.freeze(cloneRoute(this._currentRoute as Route)),
+      Object.freeze(cloneRoute(this._pendingRoute as Route))
     );
 
     // Resolve navigation guards
@@ -704,11 +628,7 @@ export class Router {
    * @param {Record[]} matches Matched routes.
    * @return {boolean}
    */
-  private matchRoute(
-      path: string,
-      routes: RouteConfig[],
-      matches: Record[],
-  ): boolean {
+  private matchRoute(path: string, routes: RouteConfig[], matches: Record[]): boolean {
     for (let i = 0; i < routes.length; i++) {
       const match = routes[i].matcher.exec(path);
       if (match) {
@@ -734,10 +654,7 @@ export class Router {
    * @param {RouteConfig[]} routes Route config collection.
    * @return {RouteConfig|null}
    */
-  private findRouteByName(
-      name: string,
-      routes: RouteConfig[],
-  ): RouteConfig | null {
+  private findRouteByName(name: string, routes: RouteConfig[]): RouteConfig | null {
     for (let i = 0; i < routes.length; i++) {
       if (routes[i].name == name) {
         return routes[i];
@@ -757,15 +674,13 @@ export class Router {
    * @param {function?} onAbort On abort callback.
    */
   private resolveRedirect(
-      redirect: routeRedirect,
-      onComplete: undefined | (() => void),
-      onAbort: undefined | (() => void),
+    redirect: routeRedirect,
+    onComplete: undefined | (() => void),
+    onAbort: undefined | (() => void)
   ): void {
     // Function
     if (tc.isFunction(redirect)) {
-      redirect = (redirect as (to: Route) => string)(
-        this._pendingRoute as Route,
-      );
+      redirect = (redirect as (to: Route) => string)(this._pendingRoute as Route);
     }
 
     // External
@@ -776,11 +691,7 @@ export class Router {
 
     // URL or Route object
     this._pendingRoute = null;
-    this.push(
-      tc.isString(redirect) ? (redirect as string) : (redirect as RawLocation),
-      onComplete,
-      onAbort,
-    );
+    this.push(tc.isString(redirect) ? (redirect as string) : (redirect as RawLocation), onComplete, onAbort);
   }
 
   /**
@@ -792,9 +703,9 @@ export class Router {
    * @param {function?} onAbort On abort callback.
    */
   private resolveNavigationGuard(
-      index = 0,
-      onComplete: undefined | (() => void),
-      onAbort: undefined | (() => void),
+    index = 0,
+    onComplete: undefined | (() => void),
+    onAbort: undefined | (() => void)
   ): void {
     // There are no other guards
     // finish the navigation change
@@ -810,43 +721,34 @@ export class Router {
         onAbort();
       }
       if (err != null) {
-        this.notifyOnError(
-            new Error(`navigation guard error, ${err.toString()}`),
-        );
+        this.notifyOnError(new Error(`navigation guard error, ${err.toString()}`));
       }
       // Revert history if needed
-      if (
-        this._currentRoute != null &&
-        historyFullURL(this._history.location) != this._currentRoute.fullPath
-      ) {
+      if (this._currentRoute != null && historyFullURL(this._history.location) != this._currentRoute.fullPath) {
         this._history.push(this._currentRoute.fullPath);
       }
     };
 
     // Execute the navigation guard and wait for the next callback
-    this._navigationGuards[index].guard(
-        this._currentRoute,
-        this._pendingRoute,
-        (next: navigationGuardNextAction) => {
-          // Continue to next guard
-          if (next == undefined) {
-            this.resolveNavigationGuard(++index, onComplete, onAbort);
-          // Cancel the route change
-          } else if (next === false) {
-            abort();
-          // Error
-          } else if (tc.isError(next)) {
-            abort(next as Error);
-          // Go to different route
-          } else if (tc.isString(next) || tc.isObject(next)) {
-            this._pendingRoute = null;
-            this.push(next as string, onComplete, onAbort);
-          // Unexpected next
-          } else {
-            abort(new Error(`unexpected next(val) value.`));
-          }
-        },
-    );
+    this._navigationGuards[index].guard(this._currentRoute, this._pendingRoute, (next: navigationGuardNextAction) => {
+      // Continue to next guard
+      if (next == undefined) {
+        this.resolveNavigationGuard(++index, onComplete, onAbort);
+        // Cancel the route change
+      } else if (next === false) {
+        abort();
+        // Error
+      } else if (tc.isError(next)) {
+        abort(next as Error);
+        // Go to different route
+      } else if (tc.isString(next) || tc.isObject(next)) {
+        this._pendingRoute = null;
+        this.push(next as string, onComplete, onAbort);
+        // Unexpected next
+      } else {
+        abort(new Error(`unexpected next(val) value.`));
+      }
+    });
   }
 
   /**
@@ -903,10 +805,7 @@ export class Router {
    * @param {function?} onComplete On complete callback.
    * @param {function?} onAbort On abort callback.
    */
-  private finishNavigationChange(
-      onComplete?: () => void,
-      onAbort?: () => void,
-  ): void {
+  private finishNavigationChange(onComplete?: () => void, onAbort?: () => void): void {
     if (this._pendingRoute == null) {
       throw new Error('navigation cannot be finished, missing pending route');
     }
@@ -917,11 +816,11 @@ export class Router {
       }
       if (this._asyncViews.has(r.id) == false) {
         asyncPending.push(
-            new Promise((resolve, reject): void => {
-              (r.component as Promise<componentModule>)
-                  .then((m) => resolve({id: r.id, component: m.default}))
-                  .catch((e) => reject(e));
-            }),
+          new Promise((resolve, reject): void => {
+            (r.component as Promise<componentModule>)
+              .then((m) => resolve({ id: r.id, component: m.default }))
+              .catch((e) => reject(e));
+          })
         );
       }
     }
@@ -941,17 +840,15 @@ export class Router {
 
       // notify all listeners and update the history
       this.notifyOnNavigationChanged(
-          Object.freeze(cloneRoute(this._currentRoute as Route)),
-          Object.freeze(cloneRoute(this._pendingRoute as Route)),
+        Object.freeze(cloneRoute(this._currentRoute as Route)),
+        Object.freeze(cloneRoute(this._pendingRoute as Route))
       );
 
       this._currentRoute = cloneRoute(this._pendingRoute as Route);
       this._pendingRoute = null;
 
       // Resolve history update if needed
-      if (
-        historyFullURL(this._history.location) != this._currentRoute.fullPath
-      ) {
+      if (historyFullURL(this._history.location) != this._currentRoute.fullPath) {
         // Push
         if (this._currentRoute.action == HISTORY_ACTION.PUSH) {
           this._history.push(this._currentRoute.fullPath);
@@ -970,21 +867,19 @@ export class Router {
     // Resolve lazy loaded async components
     if (asyncPending.length > 0) {
       Promise.all(asyncPending)
-          .then((views) => {
-            for (const v of views) {
-              const view = v as { id: symbol; component: () => object };
-              this._asyncViews.set(view.id, view.component);
-            }
-            afterResolved();
-          })
-          .catch((e) => {
-            this.notifyOnError(
-                new Error(`failed to load async error, ${e.toString()}`),
-            );
-            if (onAbort != null) {
-              onAbort();
-            }
-          });
+        .then((views) => {
+          for (const v of views) {
+            const view = v as { id: symbol; component: () => object };
+            this._asyncViews.set(view.id, view.component);
+          }
+          afterResolved();
+        })
+        .catch((e) => {
+          this.notifyOnError(new Error(`failed to load async error, ${e.toString()}`));
+          if (onAbort != null) {
+            onAbort();
+          }
+        });
       // No pending async components
     } else {
       afterResolved();
