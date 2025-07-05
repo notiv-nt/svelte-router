@@ -38,9 +38,6 @@
   "dependencies": {
     "@spaceavocado/type-check": "^1.0.2"
   },
-  "peerDependencies": {
-    "svelte": "^4.2.20"
-  },
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
